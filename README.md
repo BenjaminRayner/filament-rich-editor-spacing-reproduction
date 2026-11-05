@@ -19,13 +19,13 @@ Log in at `/admin` with `test@example.com` / `password` (local template credenti
 2. The notes contain a text paragraph above the image, a bold inline label before it, trailing text, and a text paragraph below it.
 3. Inspect `.tiptap p [data-resize-container]`: its computed top margin is 16px.
 4. Open the resource's **View** page. The disabled rich editor renders the same saved content; `.fi-prose p img` has a computed top margin of 16px.
-5. Append `?workarounds=1` to either page and reload. Both affected margins become 0px, with paragraph spacing retained.
+5. Check **Apply CSS workaround** at the top of either page. The checkbox adds `?workarounds=1` and reloads the page. Both affected margins become 0px, with paragraph spacing retained.
 
 There is no custom page or custom page template. `ExampleResource` uses `RichEditor::make('notes')->resizableImages()`; the view page uses Filament's default disabled form. The model, migration, factory, and seeder provide one persisted example. The image is a local SVG fixture.
 
 ## Workaround
 
-`public/workarounds.css` contains only the image-spacing override. It is loaded by an optional panel head hook when `?workarounds=1` is present. Default pages use stock Filament styles.
+`public/workarounds.css` contains only the image-spacing override. The checkbox adds or removes `?workarounds=1`; an optional panel head hook loads the stylesheet when that flag is present. Unchecking it reloads the original styles. Default pages use stock Filament styles.
 
 ## Screenshots
 
