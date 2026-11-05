@@ -1,0 +1,4 @@
+.fi-prose p img,
+.fi-fo-rich-editor .tiptap p [data-resize-container] {
+    margin-top: 0;
+}

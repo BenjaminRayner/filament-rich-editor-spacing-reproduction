@@ -1,46 +1,38 @@
-# Filament styling reproductions
+# Rich-editor image spacing reproduction
 
-Minimal examples of two styling issues on Filament 5.11.1, Laravel 13.40.0, and Livewire 4.4.8. Based on the official Filament 5.x reproduction template. No application data or custom theme is included.
+Filament 5.11.1, Laravel 13.40.0, Livewire 4.4.8, PHP 8.5.12. Based on Filament's official 5.x reproduction template.
 
 ## Setup
 
 ```sh
-git clone https://github.com/BenjaminRayner/filament-styling-reproduction.git
-cd filament-styling-reproduction
+git clone https://github.com/BenjaminRayner/filament-rich-editor-spacing-reproduction.git
+cd filament-rich-editor-spacing-reproduction
 composer setup
 php artisan serve
 ```
 
-Log in at `/admin` with `test@example.com` / `password`, then select **Styling Reproduction**. These are the template's local development credentials.
+Log in at `/admin` with `test@example.com` / `password` (local template credentials). Open **Examples** and select the seeded record. Standard list, create, edit, and view resource pages are available.
 
-The page is prefilled with synthetic content and creates its own example document on the local disk. No uploads, external image service, media-library plugin, or additional model setup is needed.
+## Reproduce
 
-## Issue 1: top margin on paragraph images
+1. Open the seeded **Image spacing example** record for editing.
+2. The notes contain a text paragraph above the image, a bold inline label before it, trailing text, and a text paragraph below it.
+3. Inspect `.tiptap p [data-resize-container]`: its computed top margin is 16px.
+4. Open the resource's **View** page. The disabled rich editor renders the same saved content; `.fi-prose p img` has a computed top margin of 16px.
+5. Append `?workarounds=1` to either page and reload. Both affected margins become 0px, with paragraph spacing retained.
 
-The rich editor contains a paragraph with bold text followed by a resizable image. The same content is rendered below using `RichContentRenderer`. In Chromium, both the editor resize container and the rendered image receive a computed `margin-top: 16px` from Filament's prose sibling spacing rule.
+There is no custom page or custom page template. `ExampleResource` uses `RichEditor::make('notes')->resizableImages()`; the view page uses Filament's default disabled form. The model, migration, factory, and seeder provide one persisted example. The image is a local SVG fixture.
 
-Toggle **Apply image spacing workaround**. Both margins become zero. The workaround is scoped to paragraph images and resize containers, preserving block spacing.
+## Workaround
 
-## Issue 2: empty drop-label area in disabled file uploads
+`public/workarounds.css` contains only the image-spacing override. It is loaded by an optional panel head hook when `?workarounds=1` is present. Default pages use stock Filament styles.
 
-The stock `FileUpload` field is disabled, populated with one document, configured for multiple files, and has previews disabled. Its empty `.filepond--drop-label` remains visible in layout above the file list. In Chromium it reserves approximately 67px, with the whole field measuring 111px.
+## Screenshots
 
-Toggle **Apply disabled upload workaround**. The page reloads so the CSS is active before FilePond initializes. The empty label is hidden and the field contracts to 44px around its existing file item. Applying the CSS after initialization hides the label but leaves cached layout space until reinitialization. This reproduces without the Spatie Media Library integration.
+Edit: [before](public/edit-before.png) / [after](public/edit-after.png).
 
-## Comparison screenshots
+View: [before](public/view-before.png) / [after](public/view-after.png).
 
-These screenshots were captured in headless Chromium at 1280px viewport width on PHP 8.5.12. Both workaround toggles are off initially.
+## Verification
 
-Before:
-
-![Both workarounds disabled](public/before.png)
-
-After:
-
-![Both workarounds enabled](public/after.png)
-
-## Implementation
-
-- `app/Filament/Pages/StylingReproduction.php`: the two field configurations and synthetic initial state.
-- `resources/views/filament/pages/styling-reproduction.blade.php`: rendered rich content and optional CSS workarounds.
-- `public/example.svg`: a local image fixture.
+Verified in Chromium: both extra margins change from 16px to 0px, and text above and below the image remains present. Resource create and edit submissions were also checked for persistence.
